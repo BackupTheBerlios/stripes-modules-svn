@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="syracus-stripes" basedir=".">
+
+	<property file="${basedir}/build.properties"/>
+	
+	<property name="src.dir" value="${basedir}/src"/>
+	<property name="src.dir.java" value="${src.dir}/java"/>
+	<property name="src.dir.test" value="${src.dir}/test"/>
+	
+	<property name="build.dir" value="${basedir}/build"/>
+	<property name="build.dir.classes" value="${build.dir}/classes"/>
+	<property name="build.dir.tests" value="${build.dir}/tests"/>
+	<property name="build.dir.docs" value="${build.dir}/docs/api"/>
+	
+	<path id="classpath.compile">
+		<pathelement location="${servlet-api.jar}"/>
+		<pathelement location="${stripes.jar}"/>
+		<pathelement location="${bsf.jar}"/>
+	</path>
+		
+	<target name="clean">
+		<delete dir="${build.dir}"/>
+	</target>
+	
+	<target name="compile.java">
+		<mkdir dir="${build.dir.classes}"/>
+		<javac srcdir="${src.dir.java}" destdir="${build.dir.classes}"
+				debug="${compile.debug}"
+				deprecation="${compile.deprecation}"
+				optimize="${compile.optimize}">
+			<classpath refid="classpath.compile"/>
+		</javac>
+	</target>
+	
+	<target name="compile.test" depends="compile.java">
+		<mkdir dir="${build.dir.tests}"/>
+		<javac srcdir="${src.dir.test}" destdir="${build.dir.tests}"
+				debug="${compile.debug}"
+				deprecation="${compile.deprecation}"
+				optimize="${compile.optimize}">
+		</javac>
+	</target>
+	
+	<target name="javadoc" depends="compile.java">
+		<mkdir dir="${build.dir.docs}"/>
+		<javadoc destdir="${build.dir.docs}">
+			<fileset dir="${src.dir.java}"/>
+		</javadoc>
+	</target>
+	
+	<target name="jar.all" depends="compile.java">
+		<mkdir dir="${build.dir}"/>
+		<jar basedir="${build.dir.classes}" destfile="${build.dir}/${dist.name}-${dist.version}.jar"/>
+	</target>
+	
+	<target name="jar.resolution" depends="compile.java">
+		<mkdir dir="${build.dir}"/>
+		<jar basedir="${build.dir.classes}"
+				destfile="${build.dir}/${dist.name}-${dist.version}-resolution.jar"
+				includes="org/syracus/stripes/resolution/**"/>
+	</target>
+		
+	<target name="jar.scripting" depends="compile.java">
+		<mkdir dir="${build.dir}"/>
+		<jar basedir="${build.dir.classes}"
+				destfile="${build.dir}/${dist.name}-${dist.version}-scripting.jar"
+				includes="org/syracus/stripes/config/**,org/syracus/stripes/action/**,org/syracus/stripes/bsf/**"/>
+	</target>
+	
+	<target name="dist.bin" depends="javadoc,jar.resolution,jar.scripting">
+		<zip destfile="${build.dir}/${dist.name}-${dist.version}.zip" update="false" compress="true">
+			<zipfileset dir="${build.dir.docs}" prefix="docs/api"/>
+			<zipfileset dir="${build.dir}" includes="${dist.name}-${dist.version}-*.jar"/>
+		</zip>
+	</target>
+	
+	<target name="dist.src" depends="compile.java">
+		<zip destfile="${build.dir}/${dist.name}-${dist.version}-src.zip"
+				update="false"
+				compress="true"
+				basedir="."
+				excludes="build/**,site/**,.classpath,.project"/>
+	</target>
+	
+</project>
